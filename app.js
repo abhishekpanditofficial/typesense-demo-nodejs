@@ -19,7 +19,10 @@ app.get('/search', (req, res) =>{
     const searchParameters = {
       'q'         : q,
       'query_by'  : 'title',
-      'sort_by'   : 'ratings_count:desc'
+      'sort_by'   : 'ratings_count:desc',
+      'include_fields': 'title',
+      'use_cache': true,
+      'cache_ttl': 120
     }
   
     client.collections('books')
@@ -42,10 +45,17 @@ app.post('/add', (req, res) =>{
 })
 
 app.post('/load', (req,res) => {
-const documents =  fs.readFileSync(__dirname+ "/db/books.jsonl");
-// get- all products fetch
-client.collections('books').documents().import(documents).then(() => console.log('added'));
-res.json('ok');
+client.collections().create(testCollection)
+  .then( data => {
+    console.log(data);
+    const documents =  fs.readFileSync(__dirname+ "/db/books.jsonl");
+    // get- all products fetch
+    client.collections('books').documents().import(documents).then(() => console.log('added'));
+    res.json('ok');
+  }, err => {
+    console.log(err);
+    res.json('fail');
+});
 })
 
 app.listen(PORT, () => {
